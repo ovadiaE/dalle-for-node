@@ -1,5 +1,5 @@
-import { Greeter } from '../index'
+import { generateImage } from '../index'
 
-test('My Greeter', () => {
-    expect(Greeter('Carl')).toBe('Hello Carl');
+test('generate Image', () => {
+    expect(generateImage('Carl', 'carl')).toBe('Hello Carl');
 });
