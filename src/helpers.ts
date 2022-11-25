@@ -15,7 +15,7 @@ export const generateAuthHeader = (bearerToken:string) => {
     
     const authHeader = {
         headers: {
-            'Authorization': `Bearer sess-${bearerToken}`
+            'Authorization': `Bearer sess-${bearerToken}`,
         }
     }
     return authHeader;

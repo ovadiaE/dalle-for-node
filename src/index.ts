@@ -4,7 +4,7 @@ import {generateTaskObject, generateAuthHeader} from './helpers';
 
 const url = 'https://labs.openai.com/api/labs';
 
-export const generateImage = async (bearerToken:string, prompt:string) => {
+export const generateTaskID = async (bearerToken:string, prompt:string) => {
     
     const taskObject = generateTaskObject(prompt);
     const authHeader = generateAuthHeader(bearerToken);
@@ -12,41 +12,26 @@ export const generateImage = async (bearerToken:string, prompt:string) => {
     try
     {
         let task = await axios.post(`${url}/tasks`, taskObject, authHeader);
-        let image = await checkImageStatus(task.data.id, bearerToken);
-        
-        return image.data;
-    }
+        return(task.data.id);
+    } 
     catch(error)
     {
         return error;
     }
-};
+}
 
-const getImage = async (taskID:string, bearerToken:string) => {
+export const getImage = async (taskID:string, bearerToken:string) => {
 
     const authHeader = generateAuthHeader(bearerToken);
+    console.log(authHeader);
    
     try 
     {
-        let imageObject = axios.get(`${url}/tasks/${taskID}`, authHeader);
-        return imageObject;
+        let image =  await axios.get(`${url}/tasks/${taskID}`, authHeader);
+        return image;
     }
     catch(error)
     {
-        return error;
+        return error    
     }
   }
-
-  const checkImageStatus = async (taskID:string, bearerToken:string) => {         
-        
-    let image = await getImage(taskID, bearerToken)
-
-    while("pending" === image.data.status)
-    {
-        image = await getImage(taskID, bearerToken);
-
-        setTimeout(() => {console.log('waiting')}, 2000)
-    }
-   
-    return image;
-}
