@@ -1,6 +1,5 @@
-const axios = require('axios');
-
-import {generateTaskObject, generateAuthHeader, checkImageStatus} from './helpers';
+import {generateTaskObject, generateAuthHeader, fetchImage} from './helpers';
+import axios from 'axios';
 
 const url = 'https://labs.openai.com/api/labs';
 
@@ -16,21 +15,20 @@ export const generateTaskID = async (bearerToken:string, prompt:string) => {
     } 
     catch(error)
     {
-        console.log(error)   
+        return error; 
     }
 }
 
-export const getImage = async (taskID:string, bearerToken:string) => {
-
-    const authHeader = generateAuthHeader(bearerToken);   
+export const getImages = async (bearerToken:string, taskID:string) => {
     
-    try 
+    try
     {
-        checkImageStatus(taskID, authHeader);
+        let image = await fetchImage(bearerToken, taskID);
+        return image;
     }
     catch(error)
     {
-        console.log("get image")
+        return error;
     }
   }
 
@@ -48,4 +46,5 @@ export const getImage = async (taskID:string, bearerToken:string) => {
     {
         return error;
     }
-  }
+  
+ }

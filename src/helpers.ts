@@ -1,10 +1,10 @@
-const axios = require('axios');
-
+import axios from 'axios';
 const url = 'https://labs.openai.com/api/labs';
+
 
 export const generateTaskObject = (prompt:string) => {
    
-    const taskObject = {
+    const taskObject:object = {
         task_type: "text2im",     
         prompt: {
             caption: prompt,
@@ -20,18 +20,32 @@ export const generateAuthHeader = (bearerToken:string) => {
     const authHeader = {
         headers: {
             'Authorization': `Bearer sess-${bearerToken}`,
-        }
+        },
     };
     return authHeader;
 }
 
-export const checkImageStatus = async (taskID:string, authHeader:object) => {
-    try
-    {
-        let image = await axios.get(`${url}/tasks/${taskID}`, authHeader);
-    }
-    catch(error)
-    {
-        console.log('image status')   
-    }
+const requestImages = async (bearerToken:string, taskID:string) => {
+    
+    const authHeader = generateAuthHeader(bearerToken);
+    return await axios.get(`${url}/tasks/${taskID}`, authHeader);
+}
+
+export const fetchImage = async (bearerToken:string, taskID:string) => {
+    
+    const refreshIntervalId = setInterval(async () => {
+        
+        let image = await requestImages(bearerToken, taskID)
+       
+        switch(image.data.status)
+        {
+            case "succeeded":
+                clearInterval(refreshIntervalId);
+                return image;
+            case "rejected":
+                clearInterval(refreshIntervalId);
+                return image;
+            case "pending":
+        }
+    }, 2000);  
 }
