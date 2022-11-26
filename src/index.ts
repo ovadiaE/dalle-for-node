@@ -1,37 +1,51 @@
 const axios = require('axios');
 
-import {generateTaskObject, generateAuthHeader} from './helpers';
+import {generateTaskObject, generateAuthHeader, checkImageStatus} from './helpers';
 
 const url = 'https://labs.openai.com/api/labs';
 
 export const generateTaskID = async (bearerToken:string, prompt:string) => {
     
-    const taskObject = generateTaskObject(prompt);
     const authHeader = generateAuthHeader(bearerToken);
+    const taskObject = generateTaskObject(prompt);
 
     try
     {
         let task = await axios.post(`${url}/tasks`, taskObject, authHeader);
-        return(task.data.id);
+        return task.data.id
     } 
     catch(error)
     {
-        return error;
+        console.log(error)   
     }
 }
 
 export const getImage = async (taskID:string, bearerToken:string) => {
 
-    const authHeader = generateAuthHeader(bearerToken);
-    console.log(authHeader);
-   
+    const authHeader = generateAuthHeader(bearerToken);   
+    
     try 
     {
-        let image =  await axios.get(`${url}/tasks/${taskID}`, authHeader);
-        return image;
+        checkImageStatus(taskID, authHeader);
     }
     catch(error)
     {
-        return error    
+        console.log("get image")
+    }
+  }
+
+  export const getCredits = async (bearerToken:string) => {
+    
+    const authHeader = generateAuthHeader(bearerToken);   
+    
+    try
+    {
+        let credits = await axios.get(`${url}/billing/credit_summary`, authHeader);
+        return credits.data;
+
+    }
+    catch(error)
+    {
+        return error;
     }
   }
