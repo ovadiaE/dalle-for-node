@@ -11,6 +11,7 @@ export const generateTaskID = async (bearerToken:string, prompt:string) => {
     try
     {
         let task = await axios.post(`${url}/tasks`, taskObject, authHeader);
+        console.log(task.data)
         return task.data.id
     } 
     catch(error)

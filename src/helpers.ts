@@ -28,7 +28,8 @@ export const generateAuthHeader = (bearerToken:string) => {
 const requestImages = async (bearerToken:string, taskID:string) => {
     
     const authHeader = generateAuthHeader(bearerToken);
-    return await axios.get(`${url}/tasks/${taskID}`, authHeader);
+   
+     return await axios.get(`${url}/tasks/${taskID}`, authHeader); 
 }
 
 export const fetchImage = async (bearerToken:string, taskID:string) => {
@@ -36,7 +37,7 @@ export const fetchImage = async (bearerToken:string, taskID:string) => {
     const refreshIntervalId = setInterval(async () => {
         
         let image = await requestImages(bearerToken, taskID)
-       
+
         switch(image.data.status)
         {
             case "succeeded":
@@ -46,6 +47,9 @@ export const fetchImage = async (bearerToken:string, taskID:string) => {
                 clearInterval(refreshIntervalId);
                 return image;
             case "pending":
+                console.log(image.status)
+            case "default":
+                console.log(image.data)
         }
     }, 2000);  
 }
