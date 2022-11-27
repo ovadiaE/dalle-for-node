@@ -1,8 +1,21 @@
 import axios from 'axios';
-import { imageResponse } from './types';
+
 const url = 'https://labs.openai.com/api/labs';
 
+export const handleError = (error:unknown) => {
+    if (axios.isAxiosError(error)) {
+        return error.message;
+    }
+    else {
+        return 'an unexpected error occured';
+    }
+} 
 
+/*
+    Creates object to be sent in post request for generateTask
+    Args:
+        prompt
+*/
 export const generateTaskObject = (prompt:string) => {
    
     const taskObject:object = {
@@ -16,51 +29,54 @@ export const generateTaskObject = (prompt:string) => {
     return taskObject;
 }
 
+/*
+    Creates authentication header object
+    Args:
+        bearerToken
+*/
 export const generateAuthHeader = (bearerToken:string) => {
     
-    const authHeader = {
+    const authHeader:object = {
         headers: {
-            Authorization: `Bearer sess-${bearerToken}`,
-            Accept: 'application/json'
+            'Authorization': `Bearer sess-${bearerToken}`,
         },
     };
     return authHeader;
 }
 
-const requestImages = async (bearerToken:string, taskID:string) => {
+/*
+    Get Request and error handling for retrieving images
+    Args:
+        taskID 
+        auth header containing bearerToken
+*/
+const requestImages = async (taskID:string, authHeader:object) => {
     
-    const authHeader = generateAuthHeader(bearerToken);
     try
     {
-        return await axios.get<imageResponse>(`${url}/tasks/${taskID}`, authHeader); 
+        let response =  await axios.get(`${url}/tasks/${taskID}`, authHeader);
+        console.log(JSON.stringify(response))
+        return response; 
     }
     catch(error)
     {
         console.log(error);
+        return handleError(error);
     }
 }
-
+/*
+    Polls endpoint until status is no longer pending
+    Args:
+        bearerToken - authentication 
+        auth header containing bearerToken
+*/
 export const fetchImage = async (bearerToken:string, taskID:string) => {
     
-    const refreshIntervalId = setInterval(async () => {
+        const authHeader = generateAuthHeader(bearerToken);
+
+        let image = await requestImages(taskID, authHeader);
         
-        let image = await requestImages(bearerToken, taskID)
         if(image == undefined) {
             return image
-        }
-        console.log(image.data)
-        switch(image.data.status)
-        {
-            case "succeeded":
-                clearInterval(refreshIntervalId);
-                return image;
-            case "rejected":
-                clearInterval(refreshIntervalId);
-                return image;
-            case "pending":
-                console.log(image.status)
-            case "default":
-                console.log(image.data)
-        }
-    }, 2000);  
+        } 
 }

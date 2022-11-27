@@ -3,6 +3,14 @@ import axios from 'axios';
 
 const url = 'https://labs.openai.com/api/labs';
 
+/** 
+    Creates a task using prompt and token
+    Args:
+        bearerToken - authentication
+        prompt - prompt for image
+    returns:
+        id of task created
+*/
 export const generateTaskID = async (bearerToken:string, prompt:string) => {
     
     const authHeader = generateAuthHeader(bearerToken);
@@ -11,7 +19,6 @@ export const generateTaskID = async (bearerToken:string, prompt:string) => {
     try
     {
         let task = await axios.post(`${url}/tasks`, taskObject, authHeader);
-        console.log(task.data)
         return task.data.id
     } 
     catch(error)
@@ -20,20 +27,27 @@ export const generateTaskID = async (bearerToken:string, prompt:string) => {
     }
 }
 
+/*
+    Driver for fetching image
+    Larger process so logic was placed into helper functions.
+    Args:
+        BearerToken - authentication
+        taskID - ID of task where image will be requested from
+*/
 export const getImages = async (bearerToken:string, taskID:string) => {
     
-    try
-    {
-        let image = await fetchImage(bearerToken, taskID);
-        return image;
-    }
-    catch(error)
-    {
-        return error;
-    }
-  }
+    let image = await fetchImage(bearerToken, taskID);
+    
+    return image
+  
+}
 
-  export const getCredits = async (bearerToken:string) => {
+/** 
+    Get number of credits left on user's account
+    Args:
+        bearerToken - authentication
+*/
+export const getCredits = async (bearerToken:string) => {
     
     const authHeader = generateAuthHeader(bearerToken);   
     
