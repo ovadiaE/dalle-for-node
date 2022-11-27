@@ -1,7 +1,13 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
+import { AuthHeader, imageStatus, imageObject, imageString } from './types';
 
 const url = 'https://labs.openai.com/api/labs';
 
+/*
+    Error handling for axios errors
+    Args:
+        axios error
+*/
 export const handleError = (error:unknown) => {
     if (axios.isAxiosError(error)) {
         return error.message;
@@ -36,7 +42,7 @@ export const generateTaskObject = (prompt:string) => {
 */
 export const generateAuthHeader = (bearerToken:string) => {
     
-    const authHeader:object = {
+    const authHeader:AuthHeader = {
         headers: {
             'Authorization': `Bearer sess-${bearerToken}`,
         },
@@ -51,12 +57,11 @@ export const generateAuthHeader = (bearerToken:string) => {
         auth header containing bearerToken
 */
 const requestImages = async (taskID:string, authHeader:object) => {
-    
+
     try
     {
-        let response =  await axios.get(`${url}/tasks/${taskID}`, authHeader);
-        console.log(JSON.stringify(response))
-        return response; 
+        let response =  await axios.get<AxiosResponse>(`${url}/tasks/${taskID}`, authHeader);
+        return response.data as unknown as imageStatus
     }
     catch(error)
     {
@@ -64,19 +69,52 @@ const requestImages = async (taskID:string, authHeader:object) => {
         return handleError(error);
     }
 }
+
+/*
+    Stores image links returned from requestImages into array
+    Args
+        json data returned from requestImages
+*/
+const storeImageLinks = (images:imageObject[]) => {
+    let imageLinksArray:string[] = [];
+    
+    // i is 4 because 4 images are created in a single task - if batch_sze is changed in generateTaskObject be sure to edit value here too
+    for(let i=0; i < 4; i++)
+    {
+    }
+
+}
+
 /*
     Polls endpoint until status is no longer pending
     Args:
         bearerToken - authentication 
         auth header containing bearerToken
+    returns
+        array of image links or error message
 */
 export const fetchImage = async (bearerToken:string, taskID:string) => {
     
         const authHeader = generateAuthHeader(bearerToken);
+        let imageLinksArray:string[] = [];
 
-        let image = await requestImages(taskID, authHeader);
+        let image = await requestImages(taskID, authHeader) as imageStatus
         
-        if(image == undefined) {
-            return image
-        } 
+        while(image.status === "pending")
+        {
+            image = await requestImages(taskID, authHeader) as imageStatus;
+        }
+        
+        if(!image.generations)
+        {
+            return 'Failed to generate image';
+        }
+
+        // i is 4 because 4 images are created in a single task - if batch_sze is changed in generateTaskObject be sure to edit value here too
+        for(let i=0; i < 4; i++)
+        {
+            imageLinksArray[i] = image?.generations?.data[i].generation.image_path
+        }
+
+        return imageLinksArray
 }
